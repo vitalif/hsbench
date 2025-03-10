@@ -471,7 +471,7 @@ func (stats *Stats) finish(thread_num int) {
 
 func runUpload(thread_num int, fendtime time.Time, stats *Stats) {
 	errcnt := 0
-	svc := s3.New(session.New(), cfg)
+	svc := getS3Client()
 	for {
 		if duration_secs > -1 && time.Now().After(endtime) {
 			break
@@ -538,7 +538,7 @@ func readBody(r io.Reader) (int64, error) {
 
 func runDownload(thread_num int, fendtime time.Time, stats *Stats) {
 	errcnt := 0
-	svc := s3.New(session.New(), cfg)
+	svc := getS3Client()
 	for {
 		if duration_secs > -1 && time.Now().After(endtime) {
 			break
@@ -595,7 +595,7 @@ func runDownload(thread_num int, fendtime time.Time, stats *Stats) {
 
 func runDelete(thread_num int, stats *Stats) {
 	errcnt := 0
-	svc := s3.New(session.New(), cfg)
+	svc := getS3Client()
 
 	for {
 		if duration_secs > -1 && time.Now().After(endtime) {
@@ -639,7 +639,7 @@ func runDelete(thread_num int, stats *Stats) {
 }
 
 func runBucketDelete(thread_num int, stats *Stats) {
-	svc := s3.New(session.New(), cfg)
+	svc := getS3Client()
 
 	for {
 		bucket_num := atomic.AddInt64(&op_counter, 1)
@@ -666,7 +666,7 @@ func runBucketDelete(thread_num int, stats *Stats) {
 }
 
 func runBucketList(thread_num int, stats *Stats) {
-	svc := s3.New(session.New(), cfg)
+	svc := getS3Client()
 
 	marker := ""
 	bucket_num := rand.Int63() % bucket_count
@@ -707,7 +707,7 @@ func runBucketList(thread_num int, stats *Stats) {
 var cfg *aws.Config
 
 func runBucketsInit(thread_num int, stats *Stats) {
-	svc := s3.New(session.New(), cfg)
+	svc := getS3Client()
 
 	for {
 		bucket_num := atomic.AddInt64(&op_counter, 1)
@@ -740,7 +740,7 @@ type pagedObject struct {
 }
 
 func runPagedList(wg *sync.WaitGroup, bucket_num int64, list chan<- pagedObject) {
-	svc := s3.New(session.New(), cfg)
+	svc := getS3Client()
 	svc.ListObjectsPages(
 		&s3.ListObjectsInput{
 			Bucket: &buckets[bucket_num],
@@ -760,7 +760,7 @@ func runPagedList(wg *sync.WaitGroup, bucket_num int64, list chan<- pagedObject)
 }
 
 func runBucketsClear(list <-chan pagedObject, thread_num int, stats *Stats) {
-	svc := s3.New(session.New(), cfg)
+	svc := getS3Client()
 
 	for {
 		v := <-list
